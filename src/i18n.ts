@@ -4,6 +4,10 @@ import { initReactI18next } from "react-i18next";
 
 import { resources } from "@/locale";
 
+function setDocumentLanguage(language: string) {
+  document.documentElement.lang = language;
+}
+
 void i18n
   .use(LanguageDetector)
   .use(initReactI18next)
@@ -14,6 +18,9 @@ void i18n
       "zh-CN": ["zh-Hans"],
       default: ["en"],
     },
+  })
+  .then(() => {
+    setDocumentLanguage(i18n.language);
   });
 
-document.documentElement.lang = i18n.language;
+i18n.on("languageChanged", setDocumentLanguage);

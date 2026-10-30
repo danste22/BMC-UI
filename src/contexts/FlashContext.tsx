@@ -1,4 +1,4 @@
-import { type AxiosError, type AxiosProgressEvent } from "axios";
+import { type AxiosProgressEvent } from "axios";
 import { filesize } from "filesize";
 import React, {
   createContext,
@@ -11,15 +11,12 @@ import { Trans, useTranslation } from "react-i18next";
 
 import RebootModal from "@/components/RebootModal";
 import { toast } from "@/hooks/use-toast";
+import { errorText } from "@/lib/api/error-text";
 import {
   useFirmwareUpdateMutation,
   useNodeUpdateMutation,
 } from "@/lib/api/file";
-import {
-  type FlashStatus,
-  useFirmwareStatusQuery,
-  useFlashStatusQuery,
-} from "@/lib/api/get";
+import { useFirmwareStatusQuery, useFlashStatusQuery } from "@/lib/api/get";
 import { useRebootBMCMutation } from "@/lib/api/set";
 
 type FlashType = "firmware" | "node" | null;
@@ -64,6 +61,11 @@ export const FlashProvider: React.FC<FlashProviderProps> = ({ children }) => {
   const { mutate: mutateRebootBMC } = useRebootBMCMutation();
   const [uploadProgress, setUploadProgress] =
     useState<FlashContextValue["uploadProgress"]>();
+  const [notice, setNotice] = useState<{
+    title: string;
+    description: string;
+    variant?: "destructive";
+  } | null>(null);
 
   const uploadProgressCallback = useCallback(
     (progressEvent: AxiosProgressEvent) => {
@@ -126,8 +128,7 @@ export const FlashProvider: React.FC<FlashProviderProps> = ({ children }) => {
       onError: (error) => {
         setIsUploading(false);
         const title = t("firmwareUpgrade.uploadFailed");
-        const errorMessage =
-          ((error as AxiosError).response?.data as string) ?? error.message;
+        const errorMessage = errorText(error);
         setStatusMessage(`${title}: ${errorMessage}`);
         toast({
           title,
@@ -162,8 +163,7 @@ export const FlashProvider: React.FC<FlashProviderProps> = ({ children }) => {
       onError: (error) => {
         setIsUploading(false);
         const title = t("flashNode.transferFailed", { nodeId });
-        const errorMessage =
-          ((error as AxiosError).response?.data as string) ?? error.message;
+        const errorMessage = errorText(error);
         setStatusMessage(`${title}: ${errorMessage}`);
         toast({
           title,
@@ -174,78 +174,57 @@ export const FlashProvider: React.FC<FlashProviderProps> = ({ children }) => {
     });
   };
 
-  const handleError = useCallback((error: string, title: string) => {
+  const activeStatus =
+    isFlashing && flashType === "node"
+      ? flashStatus
+      : isFlashing && flashType === "firmware"
+        ? firmwareStatus
+        : null;
+  const activeData =
+    activeStatus && !activeStatus.isStale ? activeStatus.data : undefined;
+
+  if (activeData?.Error && isFlashing) {
+    const description = activeData.Error;
     setIsFlashing(false);
     setUploadProgress(undefined);
-    setStatusMessage(error);
-    toast({
-      title,
-      description: error,
+    setStatusMessage(description);
+    setNotice({
+      title: t("firmwareUpgrade.error"),
+      description,
       variant: "destructive",
     });
-  }, []);
-
-  const handleTransferProgress = useCallback(
-    (data: FlashStatus) => {
-      const bytesWritten = data.Transferring?.bytes_written ?? 0;
-      setUploadProgress({
-        transferred: t("firmwareUpgrade.writtenData", {
-          written: filesize(bytesWritten, { standard: "jedec" }),
-        }),
-        total: null,
-        pct: 100,
-      });
-    },
-    [t]
-  );
-
-  const handleSuccess = useCallback((title: string, message: string) => {
+  } else if (activeData?.Done && isFlashing) {
+    const nodeImage = flashType === "node";
+    const title = nodeImage
+      ? t("flashNode.success")
+      : t("firmwareUpgrade.success");
+    const description = nodeImage
+      ? t("flashNode.successMessage")
+      : t("firmwareUpgrade.successMessage");
     setIsFlashing(false);
     setUploadProgress(undefined);
-    setStatusMessage(message);
-    toast({ title, description: message });
-  }, []);
+    setStatusMessage(description);
+    setNotice({ title, description });
+    if (flashType === "firmware") setRebootModalOpened(true);
+  } else if (activeData?.Transferring) {
+    const transferred = t("firmwareUpgrade.writtenData", {
+      written: filesize(activeData.Transferring.bytes_written ?? 0, {
+        standard: "jedec",
+      }),
+    });
+    if (uploadProgress?.transferred !== transferred) {
+      setUploadProgress({ transferred, total: null, pct: 100 });
+    }
+  }
 
   useEffect(() => {
-    if (!isFlashing || !flashType) return;
-
-    if (flashType === "node") {
-      if (!flashStatus.isStale) {
-        if (flashStatus.data?.Error) {
-          handleError(flashStatus.data.Error, t("firmwareUpgrade.error"));
-        } else if (flashStatus.data?.Transferring) {
-          handleTransferProgress(flashStatus.data);
-        } else if (flashStatus.data?.Done) {
-          handleSuccess(t("flashNode.success"), t("flashNode.successMessage"));
-        }
-      }
-    } else if (flashType === "firmware") {
-      if (!firmwareStatus.isStale) {
-        if (firmwareStatus.data?.Error) {
-          handleError(firmwareStatus.data.Error, t("firmwareUpgrade.error"));
-        } else if (firmwareStatus.data?.Transferring) {
-          handleTransferProgress(firmwareStatus.data);
-        } else if (firmwareStatus.data?.Done) {
-          handleSuccess(
-            t("firmwareUpgrade.success"),
-            t("firmwareUpgrade.successMessage")
-          );
-          setRebootModalOpened(true);
-        }
-      }
-    }
-  }, [
-    isFlashing,
-    flashType,
-    flashStatus.data,
-    firmwareStatus.data,
-    firmwareStatus.isStale,
-    flashStatus.isStale,
-    handleError,
-    handleTransferProgress,
-    handleSuccess,
-    t,
-  ]);
+    if (!notice) return;
+    toast({
+      title: notice.title,
+      description: notice.description,
+      variant: notice.variant,
+    });
+  }, [notice]);
 
   return (
     <FlashContext.Provider

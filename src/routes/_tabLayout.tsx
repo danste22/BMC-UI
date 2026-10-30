@@ -2,6 +2,7 @@ import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
 import Header from "@/components/header";
 import NavigationLinks from "@/components/navigation-links";
+import { safeReturnPath } from "@/lib/guards";
 
 export const Route = createFileRoute("/_tabLayout")({
   beforeLoad: ({ context, location }) => {
@@ -9,7 +10,7 @@ export const Route = createFileRoute("/_tabLayout")({
       redirect({
         to: "/login",
         search: {
-          redirect: location.href,
+          redirect: safeReturnPath(location.pathname),
         },
         throw: true,
       });

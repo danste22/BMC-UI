@@ -1,5 +1,5 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import ConfirmationModal from "@/components/ConfirmationModal";
@@ -48,9 +48,9 @@ function FlashNode() {
 
   const [statusMessage, setStatusMessage] = useState("");
 
-  useEffect(() => {
-    if (_statusMessage) setStatusMessage(_statusMessage);
-  }, [_statusMessage]);
+  if (_statusMessage && _statusMessage !== statusMessage) {
+    setStatusMessage(_statusMessage);
+  }
 
   const handleSubmit = () => {
     if (formRef.current) {
@@ -125,7 +125,7 @@ function FlashNode() {
           >
             {t("flashNode.submitButton")}
           </Button>
-          <label className="flex cursor-pointer items-center pl-4">
+          <div className="flex cursor-pointer items-center pl-4">
             <Checkbox
               id="skipCrc"
               name="skipCrc"
@@ -137,7 +137,7 @@ function FlashNode() {
             >
               {t("flashNode.skipCrc")}
             </label>
-          </label>
+          </div>
         </div>
 
         {uploadProgress && flashType === "node" && (

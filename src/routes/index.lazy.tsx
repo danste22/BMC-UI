@@ -15,7 +15,7 @@ function Index() {
     if (isAuthenticated) {
       void navigate({ to: "/info" });
     } else {
-      void navigate({ to: "/login" });
+      void navigate({ to: "/login", search: { redirect: "/info" } });
     }
   }, [isAuthenticated, navigate]);
 

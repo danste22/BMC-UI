@@ -1,12 +1,7 @@
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 
 import { useAxiosWithAuth } from "./_core";
-
-interface APIResponse<T> {
-  response: {
-    result: T;
-  }[];
-}
+import { type APIResponse } from "./types";
 
 interface USBTabResponse {
   bus_type: "Single bus" | "Usb hub";

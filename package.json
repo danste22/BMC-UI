@@ -1,6 +1,6 @@
 {
     "name": "bmc-ui",
-    "version": "3.3.7",
+    "version": "3.3.8",
     "private": true,
     "type": "module",
     "scripts": {
@@ -8,7 +8,7 @@
         "build": "tsc -b && vite build",
         "lint": "eslint .",
         "preview": "vite preview",
-        "test": "echo \"Error: no test specified\" && exit 0"
+        "test": "vitest run"
     },
     "packageManager": "npm@11.5.2",
     "dependencies": {
@@ -45,6 +45,7 @@
         "vaul": "^1.1.2"
     },
     "devDependencies": {
+        "@eslint/js": "^10.0.1",
         "@tanstack/react-query-devtools": "^5.85.3",
         "@tanstack/router-devtools": "^1.131.10",
         "@tanstack/router-vite-plugin": "^1.131.11",
@@ -53,17 +54,19 @@
         "@types/react-dom": "^19.1.7",
         "@vitejs/plugin-react-swc": "^4.0.0",
         "autoprefixer": "^10.4.21",
-        "eslint": "^9.33.0",
+        "eslint": "^10.14.0",
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-prettier": "^5.5.4",
-        "eslint-plugin-react-hooks": "^5.2.0",
-        "eslint-plugin-react-refresh": "^0.4.20",
+        "eslint-plugin-react-hooks": "^7.1.1",
+        "eslint-plugin-react-refresh": "^0.5.7",
         "eslint-plugin-simple-import-sort": "^12.1.1",
         "globals": "^16.3.0",
         "prettier": "^3.6.2",
         "prettier-plugin-tailwindcss": "^0.6.14",
-        "typescript-eslint": "^8.39.1",
+        "typescript": "^5.9.3",
+        "typescript-eslint": "^8.72.1",
         "vite": "^7.1.2",
-        "vite-plugin-svgr": "^4.3.0"
+        "vite-plugin-svgr": "^4.3.0",
+        "vitest": "^5.0.5"
     }
 }

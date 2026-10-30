@@ -1,6 +1,6 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
 import { InfoIcon } from "lucide-react";
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import USBSkeleton from "@/components/skeletons/usb";
@@ -65,12 +65,8 @@ function USB() {
   );
   const [isUsbNode1Checked, setIsUsbNode1Checked] = useState(usbNode1);
 
-  useEffect(() => {
-    // When the user chooses flash mode for node 1, the checkbox needs to be unchecked.
-    if (selectedMode === "2" && selectedNode === "0") {
-      setIsUsbNode1Checked(false);
-    }
-  }, [selectedMode, selectedNode]);
+  const node1FlashSelected = (mode: string, node: string) =>
+    mode === "2" && node === "0";
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -104,7 +100,12 @@ function USB() {
           <Select
             name="mode"
             value={selectedMode}
-            onValueChange={(value) => setSelectedMode(value)}
+            onValueChange={(value) => {
+              setSelectedMode(value);
+              if (node1FlashSelected(value, selectedNode)) {
+                setIsUsbNode1Checked(false);
+              }
+            }}
           >
             <SelectTrigger label={t("usb.modeSelect")}>
               <SelectValue placeholder={t("ui.selectPlaceholder")} />
@@ -120,7 +121,12 @@ function USB() {
           <Select
             name="node"
             value={selectedNode}
-            onValueChange={(value) => setSelectedNode(value)}
+            onValueChange={(value) => {
+              setSelectedNode(value);
+              if (node1FlashSelected(selectedMode, value)) {
+                setIsUsbNode1Checked(false);
+              }
+            }}
           >
             <SelectTrigger label={t("usb.nodeSelect")}>
               <SelectValue placeholder={t("ui.selectPlaceholder")} />

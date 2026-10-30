@@ -8,12 +8,15 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { useLoginMutation } from "@/lib/api/set";
+import { safeReturnPath } from "@/lib/guards";
 
 export const Route = createFileRoute("/login")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    redirect: safeReturnPath(search.redirect),
+  }),
   beforeLoad: ({ context, search }) => {
     if (context.auth.isAuthenticated) {
-      const redirectPath = (search as { redirect: string }).redirect || "/info";
-      redirect({ to: redirectPath, throw: true });
+      redirect({ to: search.redirect, throw: true });
     }
   },
   component: Login,

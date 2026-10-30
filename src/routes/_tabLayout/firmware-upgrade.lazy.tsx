@@ -1,5 +1,5 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import ConfirmationModal from "@/components/ConfirmationModal";
@@ -27,9 +27,9 @@ function FirmwareUpgrade() {
     handleFirmwareUpload,
   } = useFlash();
 
-  useEffect(() => {
-    if (_statusMessage) setStatusMessage(_statusMessage);
-  }, [_statusMessage]);
+  if (_statusMessage && _statusMessage !== statusMessage) {
+    setStatusMessage(_statusMessage);
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

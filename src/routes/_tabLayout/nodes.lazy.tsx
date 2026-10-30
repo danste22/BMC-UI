@@ -25,6 +25,34 @@ export const Route = createLazyFileRoute("/_tabLayout/nodes")({
 
 const POWER_CONFIRMATION_KEY = "skipNodeConfirmation";
 
+function SkipConfirmationCheckbox({
+  id,
+  checked,
+  label,
+  onCheckedChange,
+}: {
+  id: string;
+  checked: boolean;
+  label: string;
+  onCheckedChange: (checked: boolean) => void;
+}) {
+  return (
+    <div className="flex items-center space-x-2 pt-4">
+      <Checkbox
+        id={id}
+        checked={checked}
+        onCheckedChange={(value) => onCheckedChange(value === true)}
+      />
+      <label
+        htmlFor={id}
+        className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+      >
+        {label}
+      </label>
+    </div>
+  );
+}
+
 const NodeRow = (
   props: NodeInfoResponse & {
     nodeId: number;
@@ -47,21 +75,35 @@ const NodeRow = (
     useResetNodeMutation();
 
   const togglePower = () => {
-    mutatePowerNode({ nodeId: props.nodeId, powerOn: !powerOn });
-    setPowerOn(!powerOn);
-    toast({
-      title: t("nodes.powerManagement"),
-      description: powerOn
-        ? t("nodes.nodeOff", { nodeId: props.nodeId })
-        : t("nodes.nodeOn", { nodeId: props.nodeId }),
-    });
-    setShowPowerDialog(false);
+    const turningOn = !powerOn;
+    mutatePowerNode(
+      { nodeId: props.nodeId, powerOn: turningOn },
+      {
+        onSuccess: () => {
+          setPowerOn(turningOn);
+          toast({
+            title: t("nodes.powerManagement"),
+            description: turningOn
+              ? t("nodes.nodeOn", { nodeId: props.nodeId })
+              : t("nodes.nodeOff", { nodeId: props.nodeId }),
+          });
+          setShowPowerDialog(false);
 
-    // Only update localStorage if the checkbox was checked
-    if (tempSkipConfirmation) {
-      localStorage.setItem(POWER_CONFIRMATION_KEY, "true");
-      setSkipConfirmation(true);
-    }
+          if (tempSkipConfirmation) {
+            localStorage.setItem(POWER_CONFIRMATION_KEY, "true");
+            setSkipConfirmation(true);
+          }
+        },
+        onError: (e) => {
+          setShowPowerDialog(false);
+          toast({
+            title: t("nodes.pmError"),
+            description: e.message,
+            variant: "destructive",
+          });
+        },
+      }
+    );
   };
 
   const handlePowerClick = () => {
@@ -106,24 +148,6 @@ const NodeRow = (
       },
     });
   };
-
-  const ConfirmationCheckbox = () => (
-    <div className="flex items-center space-x-2 pt-4">
-      <Checkbox
-        id="skipConfirmation"
-        checked={tempSkipConfirmation}
-        onCheckedChange={(checked) =>
-          setTempSkipConfirmation(checked as boolean)
-        }
-      />
-      <label
-        htmlFor="skipConfirmation"
-        className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-      >
-        {t("nodes.dontAskAgain")}
-      </label>
-    </div>
-  );
 
   const handleCloseDialog = () => {
     setShowPowerDialog(false);
@@ -204,7 +228,12 @@ const NodeRow = (
                 }
               )}
             </p>
-            <ConfirmationCheckbox />
+            <SkipConfirmationCheckbox
+              id={`skip-confirmation-${props.nodeId}-power`}
+              checked={tempSkipConfirmation}
+              label={t("nodes.dontAskAgain")}
+              onCheckedChange={setTempSkipConfirmation}
+            />
           </>
         }
         onConfirm={togglePower}
@@ -219,7 +248,12 @@ const NodeRow = (
             <p>
               {t("nodes.resetConfirmDescription", { nodeId: props.nodeId })}
             </p>
-            <ConfirmationCheckbox />
+            <SkipConfirmationCheckbox
+              id={`skip-confirmation-${props.nodeId}-reset`}
+              checked={tempSkipConfirmation}
+              label={t("nodes.dontAskAgain")}
+              onCheckedChange={setTempSkipConfirmation}
+            />
           </>
         }
         onConfirm={resetNode}

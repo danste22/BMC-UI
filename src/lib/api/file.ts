@@ -1,6 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { AxiosProgressEvent } from "axios";
 
+import {
+  parseRemoteFileUrl,
+  parseSha256,
+  safeDownloadName,
+} from "@/lib/guards";
+
 import { useAxiosWithAuth } from "./_core";
 
 const handleParams = (variables: {
@@ -47,12 +53,10 @@ export function useBackupMutation() {
       const response = await api.get("/bmc/backup", {
         responseType: "blob",
       });
-      const contentDisposition = response.headers[
-        "content-disposition"
-      ] as string;
+      const contentDisposition = response.headers["content-disposition"] as
+        string | undefined;
       const blob = response.data as Blob;
-      const match = /filename="(.+?)"/.exec(contentDisposition);
-      const filename = match ? match[1] : "backup.tar.gz";
+      const filename = safeDownloadName(contentDisposition);
       return { blob, filename };
     },
   });
@@ -71,8 +75,13 @@ export function useFirmwareUpdateMutation(
       url?: string;
       sha256?: string;
     }) => {
-      if (!variables.file && !variables.url)
+      if (!variables.file && !variables.url?.trim())
         throw new Error("No file or URL provided");
+
+      const sha256 = parseSha256(variables.sha256);
+      const url = variables.file
+        ? undefined
+        : parseRemoteFileUrl(variables.url);
 
       // Step 1: Obtain the upload handle
       const {
@@ -81,8 +90,8 @@ export function useFirmwareUpdateMutation(
         params: handleParams({
           type: "firmware",
           file: variables.file,
-          url: variables.url,
-          sha256: variables.sha256,
+          url,
+          sha256,
         }),
       });
 
@@ -119,8 +128,13 @@ export function useNodeUpdateMutation(
       sha256?: string;
       skipCRC: boolean;
     }) => {
-      if (!variables.file && !variables.url)
+      if (!variables.file && !variables.url?.trim())
         throw new Error("No file or URL provided");
+
+      const sha256 = parseSha256(variables.sha256);
+      const url = variables.file
+        ? undefined
+        : parseRemoteFileUrl(variables.url);
 
       // Step 1: Obtain the upload handle
       const {
@@ -130,9 +144,9 @@ export function useNodeUpdateMutation(
           type: "flash",
           node: variables.nodeId,
           file: variables.file,
-          url: variables.url,
+          url,
           skipCRC: variables.skipCRC,
-          sha256: variables.sha256,
+          sha256,
         }),
       });
 
