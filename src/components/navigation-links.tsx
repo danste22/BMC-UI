@@ -50,7 +50,7 @@ function TabLink({ to, children, isFlashing }: LinkProps & FlashingLinkProps) {
       to={to}
       viewTransition
       className={cn(
-        "w-full py-3.5 text-center text-base font-semibold hover:bg-white dark:hover:bg-neutral-800",
+        "flex-1 px-4 py-3.5 text-center text-base font-semibold whitespace-nowrap hover:bg-white dark:hover:bg-neutral-800",
         isFlashing && "animate-pulse duration-700"
       )}
       activeProps={{
