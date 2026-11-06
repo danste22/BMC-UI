@@ -5,6 +5,7 @@ import React, {
   type ReactNode,
   useCallback,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import { Trans, useTranslation } from "react-i18next";
@@ -18,6 +19,7 @@ import {
 } from "@/lib/api/file";
 import { useFirmwareStatusQuery, useFlashStatusQuery } from "@/lib/api/get";
 import { useRebootBMCMutation } from "@/lib/api/set";
+import { resolveFlashOutcome } from "@/lib/flash-status";
 
 type FlashType = "firmware" | "node" | null;
 
@@ -56,6 +58,8 @@ export const FlashProvider: React.FC<FlashProviderProps> = ({ children }) => {
   const [flashType, setFlashType] = useState<FlashType>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isFlashing, setIsFlashing] = useState(false);
+  // Set when an upload completes; status responses older than this are cached data.
+  const flashStartedAt = useRef(0);
   const [statusMessage, setStatusMessage] = useState<string>("");
   const [rebootModalOpened, setRebootModalOpened] = useState(false);
   const { mutate: mutateRebootBMC } = useRebootBMCMutation();
@@ -121,6 +125,7 @@ export const FlashProvider: React.FC<FlashProviderProps> = ({ children }) => {
     await firmwareUpdateMutation.mutateAsync(variables, {
       onSuccess: () => {
         setIsUploading(false);
+        flashStartedAt.current = Date.now();
         setIsFlashing(true);
         setStatusMessage(t("firmwareUpgrade.writing"));
         void firmwareStatus.refetch();
@@ -153,6 +158,7 @@ export const FlashProvider: React.FC<FlashProviderProps> = ({ children }) => {
     await nodeUpdateMutation.mutateAsync(variables, {
       onSuccess: () => {
         setIsUploading(false);
+        flashStartedAt.current = Date.now();
         setIsFlashing(true);
         const msg = variables.skipCRC
           ? t("flashNode.flashing", { nodeId })
@@ -175,47 +181,62 @@ export const FlashProvider: React.FC<FlashProviderProps> = ({ children }) => {
   };
 
   const activeStatus =
-    isFlashing && flashType === "node"
+    flashType === "node"
       ? flashStatus
-      : isFlashing && flashType === "firmware"
+      : flashType === "firmware"
         ? firmwareStatus
         : null;
-  const activeData =
-    activeStatus && !activeStatus.isStale ? activeStatus.data : undefined;
+  const activeData = activeStatus?.data;
+  const activeUpdatedAt = activeStatus?.dataUpdatedAt ?? 0;
 
-  if (activeData?.Error && isFlashing) {
-    const description = activeData.Error;
-    setIsFlashing(false);
-    setUploadProgress(undefined);
-    setStatusMessage(description);
-    setNotice({
-      title: t("firmwareUpgrade.error"),
-      description,
-      variant: "destructive",
+  useEffect(() => {
+    const outcome = resolveFlashOutcome({
+      status: activeData,
+      flashType,
+      isFlashing,
+      startedAt: flashStartedAt.current,
+      dataUpdatedAt: activeUpdatedAt,
     });
-  } else if (activeData?.Done && isFlashing) {
-    const nodeImage = flashType === "node";
-    const title = nodeImage
-      ? t("flashNode.success")
-      : t("firmwareUpgrade.success");
-    const description = nodeImage
-      ? t("flashNode.successMessage")
-      : t("firmwareUpgrade.successMessage");
-    setIsFlashing(false);
-    setUploadProgress(undefined);
-    setStatusMessage(description);
-    setNotice({ title, description });
-    if (flashType === "firmware") setRebootModalOpened(true);
-  } else if (activeData?.Transferring) {
-    const transferred = t("firmwareUpgrade.writtenData", {
-      written: filesize(activeData.Transferring.bytes_written ?? 0, {
-        standard: "jedec",
-      }),
-    });
-    if (uploadProgress?.transferred !== transferred) {
-      setUploadProgress({ transferred, total: null, pct: 100 });
+    if (!outcome) return;
+
+    switch (outcome.kind) {
+      case "error":
+        setIsFlashing(false);
+        setUploadProgress(undefined);
+        setStatusMessage(outcome.message);
+        setNotice({
+          title: t("firmwareUpgrade.error"),
+          description: outcome.message,
+          variant: "destructive",
+        });
+        break;
+      case "done": {
+        const title = outcome.nodeImage
+          ? t("flashNode.success")
+          : t("firmwareUpgrade.success");
+        const description = outcome.nodeImage
+          ? t("flashNode.successMessage")
+          : t("firmwareUpgrade.successMessage");
+        setIsFlashing(false);
+        setUploadProgress(undefined);
+        setStatusMessage(description);
+        setNotice({ title, description });
+        if (!outcome.nodeImage) setRebootModalOpened(true);
+        break;
+      }
+      case "transferring": {
+        const transferred = t("firmwareUpgrade.writtenData", {
+          written: filesize(outcome.bytesWritten, { standard: "jedec" }),
+        });
+        setUploadProgress((prev) =>
+          prev?.transferred === transferred
+            ? prev
+            : { transferred, total: null, pct: 100 }
+        );
+        break;
+      }
     }
-  }
+  }, [activeData, activeUpdatedAt, flashType, isFlashing, t]);
 
   useEffect(() => {
     if (!notice) return;
