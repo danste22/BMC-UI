@@ -2,6 +2,8 @@
 
 BMC-UI is a web-based user interface for managing and configuring the BMC of a Turing Pi cluster.
 
+The API is [bmcd](https://github.com/turing-machines/bmcd). The board image that installs a BMC-UI release is [BMC-Firmware](https://github.com/turing-machines/BMC-Firmware). Agent instructions for building, testing, and changing this repo are in [AGENTS.md](AGENTS.md).
+
 ## Technologies Used
 
 - [React](https://reactjs.org/) - JavaScript library for building user interfaces
@@ -68,31 +70,27 @@ BMC-UI is a web-based user interface for managing and configuring the BMC of a T
 
 4. Open your browser and visit `http://localhost:5173` to see the application running.
 
+The same dev server, the unit-test gate, and the Playwright suite also run from the containers in `docker-compose.yml`. The commands are in that file's header. Container dependencies stay in the image and a named volume.
+
 ## Deployment
 
-The deployment process for BMC-UI is automated using GitHub Actions. The version management is handled by the `version` field defined in the `package.json` file.
+Releases are cut from the `version` field in `package.json`. A pull request runs lint, an `npm audit` at high severity, the production build, and the unit and component tests (`.github/workflows/quality.yml`).
 
-Whenever a pull request targeting the `main` branch is created and the `package.json` file is modified with an updated version, a new build is triggered automatically. Once the pull request is merged into the `main` branch, the version change will be detected, and the built files will be packaged into a tarball and released as an artifact on GitHub.
+After the pull request is merged to `main`, `.github/workflows/tag-and-build.yml` tags `v<version>` when that tag does not already exist and publishes `bmc-ui-<tag>.tar.gz`. BMC-Firmware consumes that tarball.
 
-To deploy a new version:
+To release:
 
-1. Create a new branch and update the `version` field in the `package.json` file following semantic versioning (e.g., `2.1.0`, `2.1.1`, `3.0.0`).
+1. Create a branch and set `version` in `package.json` (for example `3.3.8`).
+2. Open a pull request into `main` and merge it.
+3. The push to `main` tags the new version and attaches the tarball to the GitHub release.
 
-2. Commit the changes and push the branch to the repository.
-
-3. Open a pull request from the branch targeting the `main` branch.
-
-4. Review and merge the pull request into the `main` branch.
-
-5. GitHub Actions will automatically detect the version change, trigger a new build, and create a release with the tarball artifact.
-
-6. The release artifact can be downloaded and deployed to the target environment.
+Playwright and the containerized build run from `.github/workflows/build-on-demand.yml`, which is started by hand (`workflow_dispatch`). Set `run_e2e` to run the browser suite. Ordinary pushes do not start that workflow.
 
 ## Contributing
 
-Contributions are welcome! If you find any issues or have suggestions for improvements, please open an issue or submit a pull request.
+Contributions are welcome. Open an issue or a pull request.
 
-Please note that due to memory restrictions on the BMC, the final bundle size of the application cannot exceed 4MB. To ensure this limit is maintained, every pull request will report its bundle size, allowing us to track the bundle size over time. When contributing, please be mindful of the bundle size impact of your changes.
+The production bundle stays at or under 4MB. The BMC rootfs is small. Keep new dependencies and assets inside that limit.
 
 ## License
 
