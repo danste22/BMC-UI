@@ -6,7 +6,8 @@ import { type APIResponse } from "./types";
 interface USBTabResponse {
   bus_type: "Single bus" | "Usb hub";
   mode: "Host" | "Device" | "Flash";
-  node: "Node 1" | "Node 2" | "Node 3" | "Node 4";
+  /** Node name as sent by bmcd, e.g. "Node 3". Parse with parseNodeNumber. */
+  node: string;
   route: "Bmc" | "AlternativePort";
 }
 
@@ -22,10 +23,12 @@ interface AboutTabResponse {
   board_revision: string;
   hostname: string;
   api: string;
+  /** BMC firmware version (from os-release VERSION). */
   version: string;
+  /** bmcd daemon version (Cargo package version). */
+  bmcd_version: string;
   buildtime: Date;
   buildroot: string;
-  build_version: string;
 }
 
 export interface FlashStatus {

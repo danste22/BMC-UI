@@ -22,6 +22,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useUSBNode1Query, useUSBTabData } from "@/lib/api/get";
 import { useUSBModeMutation, useUSBNode1Mutation } from "@/lib/api/set";
+import { parseNodeNumber } from "@/lib/node-id";
 
 export const Route = createLazyFileRoute("/_tabLayout/usb")({
   component: USB,
@@ -60,9 +61,10 @@ function USB() {
   const [selectedMode, setSelectedMode] = useState(
     modeOptions.find((option) => option.serverValue === data.mode)?.value ?? ""
   );
-  const [selectedNode, setSelectedNode] = useState(
-    nodeOptions.find((option) => option.label === data.node)?.value ?? ""
-  );
+  const [selectedNode, setSelectedNode] = useState(() => {
+    const nodeNumber = parseNodeNumber(data.node);
+    return nodeNumber ? String(nodeNumber - 1) : "";
+  });
   const [isUsbNode1Checked, setIsUsbNode1Checked] = useState(usbNode1);
 
   const node1FlashSelected = (mode: string, node: string) =>
