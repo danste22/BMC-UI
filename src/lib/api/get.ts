@@ -3,7 +3,7 @@ import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useAxiosWithAuth } from "./_core";
 import { type APIResponse } from "./types";
 
-interface USBTabResponse {
+export interface USBTabResponse {
   bus_type: "Single bus" | "Usb hub";
   mode: "Host" | "Device" | "Flash";
   /** Node name as sent by bmcd, e.g. "Node 3". Parse with parseNodeNumber. */
@@ -11,14 +11,14 @@ interface USBTabResponse {
   route: "Bmc" | "AlternativePort";
 }
 
-interface PowerTabResponse {
+export interface PowerTabResponse {
   node1: "0" | "1";
   node2: "0" | "1";
   node3: "0" | "1";
   node4: "0" | "1";
 }
 
-interface AboutTabResponse {
+export interface AboutTabResponse {
   board_model: string;
   board_revision: string;
   hostname: string;
@@ -27,7 +27,8 @@ interface AboutTabResponse {
   version: string;
   /** bmcd daemon version (Cargo package version). */
   bmcd_version: string;
-  buildtime: Date;
+  /** Raw string from bmcd; converted to Date in useAboutTabData. */
+  buildtime: string;
   buildroot: string;
 }
 
@@ -43,7 +44,7 @@ export interface FlashStatus {
   Error?: string;
 }
 
-interface InfoTabResponse {
+export interface InfoTabResponse {
   ip: { device: string; ip: string; mac: string }[];
   storage: { name: string; total_bytes: number; bytes_free: number }[];
 }
