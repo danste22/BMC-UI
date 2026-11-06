@@ -1,0 +1,37 @@
+# Local development and test containers. Nothing is installed on the host.
+#
+#   docker compose up dev                     # http://localhost:5173
+#   CLUSTER_URL=https://192.168.1.50 docker compose up dev
+#   docker compose run --rm test              # lint, typecheck, unit tests
+#   docker compose run --rm e2e               # Playwright suite
+#
+# After changing package.json or package-lock.json, rebuild and reset the volume:
+#   docker compose build dev && docker volume rm bmc-ui_node_modules
+
+services:
+  dev:
+    build:
+      context: .
+      target: dev
+    ports:
+      - "5173:5173"
+    environment:
+      CLUSTER_URL: ${CLUSTER_URL:-https://turingpi.local}
+    volumes:
+      - .:/app
+      # Keep the Linux node_modules inside the container, not the host's.
+      - node_modules:/app/node_modules
+
+  test:
+    build:
+      context: .
+      target: test
+
+  e2e:
+    build:
+      context: .
+      target: e2e
+    ipc: host
+
+volumes:
+  node_modules:
