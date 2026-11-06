@@ -20,7 +20,7 @@ function BasicInfoContent() {
         </div>
         <div className="flex items-center">
           <span className="text-sm font-semibold lowercase opacity-60">
-            daemon
+            {t("about.firmwareVersion")}
           </span>
           <span className="ml-2 text-sm font-semibold">v{data.version}</span>
         </div>

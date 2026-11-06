@@ -140,6 +140,7 @@ const translations = {
     boardModel: "主板型号",
     hostname: "主机名",
     daemonVersion: "守护进程版本",
+    firmwareVersion: "固件版本",
     buildTime: "构建时间",
     buildVersion: "构建版本",
     buildrootRelease: "Buildroot 发行版",

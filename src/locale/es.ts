@@ -146,6 +146,7 @@ const translations = {
     boardModel: "Modelo de placa",
     hostname: "Nombre de host",
     daemonVersion: "Versión del daemon",
+    firmwareVersion: "Versión del firmware",
     buildTime: "Fecha de compilación",
     buildVersion: "Versión de compilación",
     buildrootRelease: "Versión de Buildroot",

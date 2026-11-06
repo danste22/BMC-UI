@@ -8,7 +8,7 @@ export default function BasicInfoSkeleton() {
           <div className="ml-2 h-5 w-12 animate-pulse bg-neutral-200 dark:bg-neutral-700"></div>
         </div>
         <div className="flex items-center">
-          <span className="text-sm font-semibold opacity-60">daemon</span>
+          <span className="text-sm font-semibold opacity-60">firmware</span>
           <div className="ml-2 h-5 w-12 animate-pulse bg-neutral-200 dark:bg-neutral-700"></div>
         </div>
       </div>

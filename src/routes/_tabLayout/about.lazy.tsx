@@ -45,15 +45,15 @@ function About() {
         </TableItem>
         <TableItem term={t("about.hostname")}>{data.hostname}</TableItem>
         <TableItem
-          term={t("about.daemonVersion")}
+          term={t("about.firmwareVersion")}
         >{`v${data.version}`}</TableItem>
+        <TableItem
+          term={t("about.daemonVersion")}
+        >{`v${data.bmcd_version}`}</TableItem>
         <TableItem term={t("about.buildTime")}>
           {data.buildtime.toLocaleString()} (
           {timeAgo.format(new Date(data.buildtime))})
         </TableItem>
-        <TableItem
-          term={t("about.buildVersion")}
-        >{`v${data.build_version}`}</TableItem>
         <TableItem term={t("about.buildrootRelease")}>
           {data.buildroot}
         </TableItem>

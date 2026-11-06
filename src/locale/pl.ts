@@ -145,6 +145,7 @@ const translations = {
     boardModel: "Model płyty",
     hostname: "Nazwa hosta",
     daemonVersion: "Wersja demona",
+    firmwareVersion: "Wersja firmware",
     buildTime: "Czas kompilacji",
     buildVersion: "Wersja kompilacji",
     buildrootRelease: "Wydanie Buildroot",

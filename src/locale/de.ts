@@ -150,6 +150,7 @@ const translations = {
     boardModel: "Board-Modell",
     hostname: "Hostname",
     daemonVersion: "Daemon-Version",
+    firmwareVersion: "Firmware-Version",
     buildTime: "Build-Zeit",
     buildVersion: "Build-Version",
     buildrootRelease: "Buildroot-Release",
