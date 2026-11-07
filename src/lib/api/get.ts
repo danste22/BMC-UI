@@ -6,7 +6,7 @@ import { type APIResponse } from "./types";
 export interface USBTabResponse {
   bus_type: "Single bus" | "Usb hub";
   mode: "Host" | "Device" | "Flash";
-  /** Node name as sent by bmcd, e.g. "Node 3". Parse with parseNodeNumber. */
+  /** Node name as sent by bmcd, e.g. "node3". Parse with parseNodeNumber. */
   node: string;
   route: "Bmc" | "AlternativePort";
 }

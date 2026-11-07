@@ -85,12 +85,12 @@ const server = createServer(async (req, res) => {
     );
   }
   if (opt === "get" && ty === "usb") {
-    // bmcd today: NodeId Display -> "Node 3" (BMC-Firmware #164).
+    // bmcd today: NodeId::api_name -> "node3" (BMC-Firmware #164).
     return send(
       res,
       200,
       wrap([
-        { mode: "Host", node: "Node 3", route: "Bmc", bus_type: "Single bus" },
+        { mode: "Host", node: "node3", route: "Bmc", bus_type: "Single bus" },
       ])
     );
   }

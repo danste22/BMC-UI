@@ -46,8 +46,8 @@ describe("bmcd response contracts", () => {
   });
 
   describe("usb (type=usb)", () => {
-    it("names the node as 'Node N' and the UI parses it (BMC-Firmware #164)", () => {
-      expect(usbFixture.node).toMatch(/^Node [1-4]$/);
+    it("names the node with api_name and the UI parses it (BMC-Firmware #164)", () => {
+      expect(usbFixture.node).toBe("node3");
       expect(parseNodeNumber(usbFixture.node)).toBe(3);
     });
   });

@@ -22,7 +22,7 @@ bmcd is the source of truth for response shapes. Types are `src/lib/api/get.ts` 
 
 `version` is the BMC firmware version from os-release. `bmcd_version` is the daemon version. `buildtime` arrives as a string.
 
-Node identity from the API is display text (`"Node 3"`, `"node3"`, or `"3"`). Parse it with `parseNodeNumber` in `src/lib/node-id.ts`.
+Node identity on the USB endpoint is `NodeId::api_name` (`"node3"`). `parseNodeNumber` in `src/lib/node-id.ts` also accepts the older `"Node 3"` and a bare `"3"`.
 
 A firmware status body can be HTTP 200 and still carry `Error`. The outcome rules are `resolveFlashOutcome` in `src/lib/flash-status.ts`. `FlashContext` applies that result in an effect keyed on the status query.
 

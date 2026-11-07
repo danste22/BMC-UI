@@ -1,9 +1,8 @@
 /**
  * Node number (1-4) from a node name returned by the BMC.
  *
- * The API has used different spellings for the same node: `"Node 3"` (USB
- * endpoint today), `"node3"` (power endpoint keys), or a bare `"3"`. Match on
- * the number, never on the display text.
+ * The USB endpoint sends `NodeId::api_name` (`"node3"`). Older responses and
+ * the power keys have also used `"Node 3"` and `"3"`. Match on the number.
  */
 export function parseNodeNumber(value: string | undefined): number | undefined {
   const match = /(\d+)\s*$/.exec(value ?? "");

@@ -25,15 +25,15 @@ export const aboutFixture = {
   buildroot: "Buildroot 2026.08",
 } satisfies AboutTabResponse;
 
-/** `get_usb_mode`, legacy.rs ~L587-L605. `node` is `NodeId` Display: "Node N" (hal.rs:95). */
+/** `usb_mode_body`, legacy.rs. `node` is `NodeId::api_name` (`node1` … `node4`). */
 export const usbFixture = {
   mode: "Host",
-  node: "Node 3",
+  node: "node3",
   route: "Bmc",
   bus_type: "Single bus",
 } satisfies USBTabResponse;
 
-/** `get_node_power_status` keys node1..node4, values "0" or "1" (legacy.rs ~L480-L500). */
+/** Inner object of `node_power_body`. The daemon sends that object inside a one-element array. */
 export const powerFixture = {
   node1: "1",
   node2: "0",
